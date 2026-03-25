@@ -1,66 +1,280 @@
-
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ゴミ収集スケジュール</title>
 <style>
-  .wrap { padding: 1rem 0; font-size: 13px; }
-  table { width: 100%; border-collapse: collapse; table-layout: fixed; }
-  th, td { padding: 8px 10px; border: 0.5px solid var(--color-border-tertiary); text-align: center; vertical-align: middle; }
-  th { background: var(--color-background-secondary); color: var(--color-text-secondary); font-weight: 500; font-size: 12px; }
-  td.area { text-align: left; font-weight: 500; color: var(--color-text-primary); font-size: 12px; white-space: nowrap; }
-  .tag { display: inline-block; padding: 2px 7px; border-radius: 4px; font-size: 11px; white-space: nowrap; }
-  .t-moeru { background: #FAECE7; color: #993C1D; }
-  .t-moenai { background: #E6F1FB; color: #185FA5; }
-  .t-plastic { background: #EAF3DE; color: #3B6D11; }
-  .t-danbo { background: #FAEEDA; color: #854F0B; }
-  .t-shigen { background: #EEEDFE; color: #3C3489; }
-  .note { font-size: 11px; color: var(--color-text-secondary); margin-top: 10px; }
+  @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&display=swap');
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Noto Sans JP', sans-serif;
+    background: #F5F4F0;
+    color: #1a1a1a;
+    min-height: 100vh;
+    padding: 24px 16px 48px;
+  }
+
+  header {
+    text-align: center;
+    margin-bottom: 28px;
+  }
+
+  header h1 {
+    font-size: 18px;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    color: #1a1a1a;
+  }
+
+  header p {
+    font-size: 12px;
+    color: #888;
+    margin-top: 4px;
+  }
+
+  .area-card {
+    background: #fff;
+    border-radius: 16px;
+    padding: 20px;
+    margin-bottom: 16px;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+  }
+
+  .area-name {
+    font-size: 15px;
+    font-weight: 700;
+    margin-bottom: 14px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid #EBEBEB;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .area-name .dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    display: inline-block;
+  }
+
+  .rows { display: flex; flex-direction: column; gap: 10px; }
+
+  .row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+  }
+
+  .label {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    font-size: 13px;
+    font-weight: 500;
+    color: #444;
+    flex-shrink: 0;
+    width: 110px;
+  }
+
+  .icon {
+    width: 26px;
+    height: 26px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 13px;
+    flex-shrink: 0;
+  }
+
+  .days {
+    display: flex;
+    gap: 5px;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+  }
+
+  .day-tag {
+    font-size: 12px;
+    font-weight: 500;
+    padding: 4px 10px;
+    border-radius: 20px;
+    white-space: nowrap;
+  }
+
+  /* カテゴリ別カラー */
+  .moeru  .icon { background: #FFF0EA; }
+  .moeru  .day-tag { background: #FFF0EA; color: #C04A1A; }
+  .moeru  .dot { background: #E05A25; }
+
+  .moenai .icon { background: #E8F2FF; }
+  .moenai .day-tag { background: #E8F2FF; color: #1760B0; }
+  .moenai .dot { background: #2B74D4; }
+
+  .plastic .icon { background: #EAFAF0; }
+  .plastic .day-tag { background: #EAFAF0; color: #1A7A40; }
+  .plastic .dot { background: #22A05A; }
+
+  .danbo  .icon { background: #FFF6E0; }
+  .danbo  .day-tag { background: #FFF6E0; color: #8A5C00; }
+  .danbo  .dot { background: #D49000; }
+
+  .shigen .icon { background: #F0ECFF; }
+  .shigen .day-tag { background: #F0ECFF; color: #4A30A0; }
+  .shigen .dot { background: #6B50D4; }
+
+  .note {
+    font-size: 11px;
+    color: #999;
+    text-align: center;
+    margin-top: 20px;
+    line-height: 1.7;
+  }
+
+  .none { color: #ccc; font-size: 12px; }
 </style>
-<div class="wrap">
-  <table>
-    <colgroup>
-      <col style="width: 22%">
-      <col style="width: 19%">
-      <col style="width: 22%">
-      <col style="width: 18%">
-      <col style="width: 19%">
-    </colgroup>
-    <thead>
-      <tr>
-        <th>エリア</th>
-        <th>可燃ごみ</th>
-        <th>不燃ごみ</th>
-        <th>プラスチック</th>
-        <th>ダンボール・資源</th>
-      </tr>
-    </thead>
-    <tbody>
-      <tr>
-        <td class="area">中野区<br>南台3丁目</td>
-        <td><span class="tag t-moeru">水・土</span></td>
-        <td><span class="tag t-moenai">第1・3 木</span></td>
-        <td><span class="tag t-plastic">金</span></td>
-        <td><span class="tag t-danbo">月</span></td>
-      </tr>
-      <tr>
-        <td class="area">渋谷区<br>幡ヶ谷3丁目</td>
-        <td><span class="tag t-moeru">月・木</span></td>
-        <td><span class="tag t-moenai">第2 金</span></td>
-        <td>—</td>
-        <td><span class="tag t-shigen">土（資源）</span></td>
-      </tr>
-      <tr>
-        <td class="area">中野区<br>上高田1丁目</td>
-        <td><span class="tag t-moeru">月・木</span></td>
-        <td><span class="tag t-moenai">第2・4 金</span></td>
-        <td><span class="tag t-plastic">土</span></td>
-        <td><span class="tag t-danbo">金</span></td>
-      </tr>
-      <tr>
-        <td class="area">渋谷区<br>本町6丁目</td>
-        <td><span class="tag t-moeru">月・木</span></td>
-        <td><span class="tag t-moenai">第2 土</span></td>
-        <td>—</td>
-        <td><span class="tag t-shigen">金（資源）</span></td>
-      </tr>
-    </tbody>
-  </table>
-  <p class="note">※ 渋谷区の「資源」にはプラスチック・ダンボール・発泡スチロールなどを含む</p>
+</head>
+<body>
+
+<header>
+  <h1>🗑 ゴミ収集スケジュール</h1>
+  <p>新事務所エリア対応表</p>
+</header>
+
+<!-- 中野区 南台3丁目 -->
+<div class="area-card">
+  <div class="area-name">
+    <span class="dot moeru" style="background:#888;"></span>
+    中野区 南台3丁目
+  </div>
+  <div class="rows">
+    <div class="row moeru">
+      <div class="label"><div class="icon">🔥</div>可燃ごみ</div>
+      <div class="days">
+        <span class="day-tag">水曜</span>
+        <span class="day-tag">土曜</span>
+      </div>
+    </div>
+    <div class="row moenai">
+      <div class="label"><div class="icon">🧱</div>不燃ごみ</div>
+      <div class="days">
+        <span class="day-tag">第1・3 木曜</span>
+      </div>
+    </div>
+    <div class="row plastic">
+      <div class="label"><div class="icon">♻️</div>プラスチック</div>
+      <div class="days">
+        <span class="day-tag">金曜</span>
+      </div>
+    </div>
+    <div class="row danbo">
+      <div class="label"><div class="icon">📦</div>ダンボール</div>
+      <div class="days">
+        <span class="day-tag">月曜</span>
+      </div>
+    </div>
+  </div>
 </div>
+
+<!-- 渋谷区 幡ヶ谷3丁目 -->
+<div class="area-card">
+  <div class="area-name">
+    <span class="dot" style="background:#888;"></span>
+    渋谷区 幡ヶ谷3丁目
+  </div>
+  <div class="rows">
+    <div class="row moeru">
+      <div class="label"><div class="icon">🔥</div>可燃ごみ</div>
+      <div class="days">
+        <span class="day-tag">月曜</span>
+        <span class="day-tag">木曜</span>
+      </div>
+    </div>
+    <div class="row moenai">
+      <div class="label"><div class="icon">🧱</div>不燃ごみ</div>
+      <div class="days">
+        <span class="day-tag">第2 金曜</span>
+      </div>
+    </div>
+    <div class="row shigen">
+      <div class="label"><div class="icon">🌿</div>資源ごみ</div>
+      <div class="days">
+        <span class="day-tag">土曜</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 中野区 上高田1丁目 -->
+<div class="area-card">
+  <div class="area-name">
+    <span class="dot" style="background:#888;"></span>
+    中野区 上高田1丁目
+  </div>
+  <div class="rows">
+    <div class="row moeru">
+      <div class="label"><div class="icon">🔥</div>可燃ごみ</div>
+      <div class="days">
+        <span class="day-tag">月曜</span>
+        <span class="day-tag">木曜</span>
+      </div>
+    </div>
+    <div class="row moenai">
+      <div class="label"><div class="icon">🧱</div>不燃ごみ</div>
+      <div class="days">
+        <span class="day-tag">第2・4 金曜</span>
+      </div>
+    </div>
+    <div class="row plastic">
+      <div class="label"><div class="icon">♻️</div>プラスチック</div>
+      <div class="days">
+        <span class="day-tag">土曜</span>
+      </div>
+    </div>
+    <div class="row danbo">
+      <div class="label"><div class="icon">📦</div>ダンボール</div>
+      <div class="days">
+        <span class="day-tag">金曜</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 渋谷区 本町6丁目 -->
+<div class="area-card">
+  <div class="area-name">
+    <span class="dot" style="background:#888;"></span>
+    渋谷区 本町6丁目
+  </div>
+  <div class="rows">
+    <div class="row moeru">
+      <div class="label"><div class="icon">🔥</div>可燃ごみ</div>
+      <div class="days">
+        <span class="day-tag">月曜</span>
+        <span class="day-tag">木曜</span>
+      </div>
+    </div>
+    <div class="row moenai">
+      <div class="label"><div class="icon">🧱</div>不燃ごみ</div>
+      <div class="days">
+        <span class="day-tag">第2 土曜</span>
+      </div>
+    </div>
+    <div class="row shigen">
+      <div class="label"><div class="icon">🌿</div>資源ごみ</div>
+      <div class="days">
+        <span class="day-tag">金曜</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<p class="note">※ 渋谷区の「資源ごみ」にはプラスチック・ダンボール・発泡スチロール等を含む</p>
+
+</body>
+</html>
